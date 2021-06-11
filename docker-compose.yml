@@ -1,0 +1,50 @@
+version: "3.0"
+services:
+  minio0:
+    image: minio/minio:RELEASE.2021-06-09T18-51-39Z
+    container_name: minio0
+    command: server data{0...3}
+    volumes:
+      - "data0:/data0"
+      - "data1:/data1"
+      - "data2:/data2"
+      - "data3:/data3"
+    environment:
+      MINIO_ACCESS_KEY: "${MINIO_ACCESS_KEY}"
+      MINIO_SECRET_KEY: "${MINIO_SECRET_KEY}"
+    ports:
+      - 9000:9000
+  minio1:
+    image: minio/minio:RELEASE.2021-06-09T18-51-39Z
+    container_name: minio1
+    command: server data{4...7}
+    volumes:
+      - "data4:/data4"
+      - "data5:/data5"
+      - "data6:/data6"
+      - "data7:/data7"
+    environment:
+      MINIO_ACCESS_KEY: "${MINIO_ACCESS_KEY}"
+      MINIO_SECRET_KEY: "${MINIO_SECRET_KEY}"
+    ports:
+      - 9001:9000
+  replication_setup:
+    image: minio/mc:RELEASE.2021-06-08T01-29-37Z
+    entrypoint: "/scripts/setup.sh"
+    command: "${MINIO_ACCESS_KEY} ${MINIO_SECRET_KEY}"
+    volumes:
+      - "./policies:/policies:ro"
+      - "./scripts:/scripts:ro"
+    depends_on:
+      - "minio0"
+      - "minio1"
+
+volumes:
+  data0:
+  data1:
+  data2:
+  data3:
+  data4:
+  data5:
+  data6:
+  data7:
