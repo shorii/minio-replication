@@ -29,7 +29,7 @@ function create_replication_target() {
   replication_remote_user=$1;shift;
   replication_remote_host=$1;shift;
   arn=$(mc admin bucket remote add $replication_alias/$sample_bucket http://$replication_remote_user:$secret_key@$replication_remote_host/$sample_bucket --service "replication")
-  echo $arn
+  echo $(echo $arn | sed -e 's/Remote ARN = `\(.*\)`./\1/g')
 }
 
 minio0="minio0"
@@ -95,5 +95,6 @@ mc alias s $minio1_replication_alias http://$minio1_server $minio1_replication_a
 arn0=$(create_replication_target $minio0_replication_alias $minio1_replication_remote_user $minio1_server)
 arn1=$(create_replication_target $minio1_replication_alias $minio0_replication_remote_user $minio0_server)
 
-echo $arn0
-echo $arn1
+# create replication rule
+mc replicate add $minio0_replication_alias/$sample_bucket --remote-bucket $sample_bucket --arn $arn0 --replicate "delete,delete-marker"
+mc replicate add $minio1_replication_alias/$sample_bucket --remote-bucket $sample_bucket --arn $arn1 --replicate "delete,delete-marker"
